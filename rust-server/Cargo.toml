@@ -1,0 +1,24 @@
+[package]
+name = "rust-server"
+version = "0.1.0"
+authors = ["Sean Flinn <sflinn54@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "3"
+actix-cors = "0.5.4"
+serde = "1.0.123"
+serde_json = "1.0.62"
+#json = "0.11.13"
+futures = "0.3.12"
+uuid = {version = "0.8.2", features = ["v4"] }
+env_logger = "0.8.3"
+log = "0.4.14"
+rust-server-model = {path = "../rust-server-model"}
+
+[dependencies.mongodb]
+version = "1.2.0"
+default-features = false
+features = ["sync"]
