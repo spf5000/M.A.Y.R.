@@ -1,0 +1,33 @@
+[package]
+name = "rust-console"
+version = "0.1.0"
+authors = ["Sean Flinn <sflinn54@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# logging / stack traces
+log = "^0.4"
+wasm-logger = "^0.2"
+console_error_panic_hook = "0.1.6"
+
+
+anyhow = "1.0.38"
+
+# wasm / yew
+wasm-bindgen = "^0.2"
+yew = "^0.17"
+yew-router = "^0.14.0"
+
+# Time units
+chrono = "^0.4.19"
+
+# serialization
+serde = { version = "1.0", features = ["derive"] }
+
+# Server model
+rust-server-model = {path = "../rust-server-model"}
