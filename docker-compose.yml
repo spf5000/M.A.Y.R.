@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  database:
+    image: 'mongo'
+    container_name: 'mayr-mongo'
+    volumes:
+      - ./mongo-volume:/data/db/
+    ports:
+      - '27017-27019:27017-27019'
+
