@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/rust-server/rust-server.iml" filepath="$PROJECT_DIR$/rust-server/rust-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rust-server-model/rust-server-model.iml" filepath="$PROJECT_DIR$/rust-server-model/rust-server-model.iml" />
+    </modules>
+  </component>
+</project>

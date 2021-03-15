@@ -11,6 +11,7 @@ use std::io::{Error as IoError, ErrorKind as IoErrorKind};
 
 mod dao;
 mod handlers;
+mod utils;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

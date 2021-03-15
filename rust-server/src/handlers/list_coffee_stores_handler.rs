@@ -1,14 +1,23 @@
 use crate::dao::coffee_store::CoffeeStoreDao;
-use actix_web::{post, web, HttpRequest, HttpResponse, Responder};
-use log::info;
+use actix_web::{post, web, HttpResponse, Responder};
 use std::sync::Arc;
+use rust_server_model::coffee_store::{ListCoffeeStoresRequest, ListCofeeStoresResponse};
+use crate::utils::error_utils::create_internal_error;
 
 #[post("/coffee/list")]
 pub async fn list_coffee_stores(
-    request: HttpRequest,
+    request: web::Bytes,
     handler: web::Data<ListCoffeeStoresHandler>,
 ) -> impl Responder {
-    info!("Listing Coffee Stores");
+    log::info!("Listing Coffee Stores");
+    let request = match serde_json::from_slice(&request) {
+        Result::Ok(request) => request,
+        Result::Err(err) => {
+            // TODO: Invalid input request?
+            log::error!("Failed to deserialize request: {:?}", request);
+            return create_internal_error()
+        }
+    };
     handler.handle(request)
 }
 
@@ -24,16 +33,27 @@ impl ListCoffeeStoresHandler {
         ListCoffeeStoresHandler { coffee_store_dao }
     }
 
-    fn handle(&self, _req: HttpRequest) -> HttpResponse {
+    fn handle(&self, _req: ListCoffeeStoresRequest) -> HttpResponse {
+        // TODO: paginate DAO
         let response = self.coffee_store_dao.list_stores();
         match response {
             Ok(stores) => {
-                HttpResponse::Ok()
-                    .content_type("application/json")
-                    .body(serde_json::to_string(&stores).unwrap())
+                let response = ListCofeeStoresResponse {
+                    coffee_stores: stores,
+                    next_token: Option::None
+                };
+                match serde_json::to_string(&response) {
+                    Ok(body) => HttpResponse::Ok()
+                        .content_type("application/json")
+                        .body(body),
+                    Err(err) => {
+                        log::error!("Failed to serialize CreateCoffeeStore response: {}", err);
+                        create_internal_error()
+                    }
+                }
             },
             Err(err) => {
-                HttpResponse::InternalServerError().body(err)
+                create_internal_error()
             }
         }
     }

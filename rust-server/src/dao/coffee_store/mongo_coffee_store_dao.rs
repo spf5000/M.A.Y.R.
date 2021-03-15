@@ -2,9 +2,10 @@ use super::CoffeeStoreDao;
 // use std::sync::Arc;
 use mongodb::sync::Client;
 use mongodb::bson::{from_document, to_document, Document};
-use rust_server_model::coffee_model::CoffeeStore;
+use rust_server_model::coffee_store::{CoffeeStoreDetails, CoffeeStoreSummary, CoffeeStoreManifest};
 use std::result::Result::Err;
 use mongodb::sync::Collection;
+use uuid::Uuid;
 
 const DATABASE: &'static str = "test";
 const COLLECTION: &'static str = "CoffeeStores";
@@ -14,7 +15,6 @@ pub struct MongoCoffeeStoreDao {
 }
 
 impl MongoCoffeeStoreDao {
-    // fn new(client: Arc<Client>) -> MongoCoffeeStoreDao {
     pub fn new(client: Client) -> MongoCoffeeStoreDao {
         MongoCoffeeStoreDao {
             mongo_client: client
@@ -28,7 +28,7 @@ impl MongoCoffeeStoreDao {
 }
 
 impl CoffeeStoreDao for MongoCoffeeStoreDao {
-    fn list_stores(self: &Self) -> Result<Vec<CoffeeStore>, String> {
+    fn list_stores(self: &Self) -> Result<Vec<CoffeeStoreSummary>, String> {
         log::info!("Listing the coffee stores from MongoDB");
         let mut output = vec![];
         let collection = self.get_coffee_store_collection();
@@ -46,15 +46,22 @@ impl CoffeeStoreDao for MongoCoffeeStoreDao {
         Ok(output)
     }
 
-    fn create_store(self: &Self, coffee_store: CoffeeStore) -> Result<(), String>{
+    fn create_store(self: &Self, coffee_store: CoffeeStoreManifest) -> Result<CoffeeStoreDetails, String>{
         log::info!("Creating coffee store {:?} and storing in MongoDB", coffee_store);
+        let coffee_store_details = CoffeeStoreDetails {
+            id: Uuid::new_v4().to_string(),
+            name: coffee_store.name,
+            description: coffee_store.description,
+            avg_rating: coffee_store.avg_rating
+        };
         let collection = self.get_coffee_store_collection();
-        collection.insert_one(coffee_store_to_document(&coffee_store)?, None)
+        collection.insert_one(coffee_store_to_document(&coffee_store_details)?, None)
             .map(|_insert_response| ())
-            .map_err(|_err| "mongodb error".to_string())
+            .map_err(|_err| "mongodb error".to_string())?;
+        Ok(coffee_store_details)
     }
 }
 
-fn coffee_store_to_document(coffee_store: &CoffeeStore) -> Result<Document, String> {
+fn coffee_store_to_document(coffee_store: &CoffeeStoreDetails) -> Result<Document, String> {
     to_document(coffee_store).map_err(|_err| format!("Failed to serialize coffee store {:?}", coffee_store))
 }

@@ -1,20 +1,23 @@
 use crate::dao::coffee_store::CoffeeStoreDao;
 use actix_web::{post, web, HttpResponse, Responder};
-use log::info;
-use rust_server_model::coffee_model::CoffeeStore;
+use rust_server_model::coffee_store::{CreateCoffeeStoreRequest, CreateCoffeeStoreResponse};
 use std::sync::Arc;
+use crate::utils::error_utils::create_internal_error;
 
 #[post("/coffee/create")]
 pub async fn create_coffee_store(
     request: web::Bytes,
     handler: web::Data<CreateCoffeeStoreHandler>,
 ) -> impl Responder {
-    info!("Bytes {:?}", request);
-    let coffee_store = match serde_json::from_slice(&request) {
-        Result::Ok(coffee_store) => coffee_store,
-        Result::Err(err) => panic!(err),
+    let request = match serde_json::from_slice(&request) {
+        Result::Ok(request) => request,
+        Result::Err(err) => {
+            // TODO: Invalid input request?
+            log::error!("Failed to deserialize request: {:?}", request);
+            return create_internal_error()
+        }
     };
-    handler.handle(coffee_store)
+    handler.handle(request)
 }
 
 #[derive(Clone)]
@@ -29,10 +32,26 @@ impl CreateCoffeeStoreHandler {
         CreateCoffeeStoreHandler { coffee_store_dao }
     }
 
-    fn handle(&self, coffee_store: CoffeeStore) -> HttpResponse {
-        match self.coffee_store_dao.create_store(coffee_store) {
-            Ok(()) => HttpResponse::Ok().finish(),
-            Err(err) => HttpResponse::InternalServerError().body(err)
+    fn handle(&self, request: CreateCoffeeStoreRequest) -> HttpResponse {
+        match self.coffee_store_dao.create_store(request.coffee_store) {
+            Ok(coffee_store_details) => {
+                let response = CreateCoffeeStoreResponse {
+                    coffee_store_details
+                };
+                match serde_json::to_string(&response) {
+                    Ok(body) => HttpResponse::Ok()
+                        .content_type("application/json")
+                        .body(body),
+                    Err(err) => {
+                        log::error!("Failed to serialize CreateCoffeeStore response: {}", err);
+                        create_internal_error()
+                    }
+                }
+            },
+            Err(err) => {
+                log::error!("DAO error when creating store: {}", err);
+                create_internal_error()
+            }
         }
     }
 }

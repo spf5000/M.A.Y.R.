@@ -1,1 +1,2 @@
-pub mod coffee_model;
+pub mod coffee_store;
+pub mod common;
