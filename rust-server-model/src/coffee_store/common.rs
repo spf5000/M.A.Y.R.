@@ -1,5 +1,4 @@
 use serde::{Serialize, Deserialize};
-use crate::common::Address;
 
 /// Represents a coffee store with the high level information about that store.
 #[derive(Serialize, Deserialize, Debug, Clone)]

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::vec::Vec;
 use uuid::Uuid;
 use std::sync::RwLock;
+use crate::error::ServerError;
 use rust_server_model::coffee_store::{CoffeeStoreSummary, CoffeeStoreManifest, CoffeeStoreDetails};
 
 pub struct HashMapCoffeeStoreDao {
@@ -18,7 +19,7 @@ impl HashMapCoffeeStoreDao {
 }
 
 impl CoffeeStoreDao for HashMapCoffeeStoreDao {
-    fn list_stores(&self) -> Result<Vec<CoffeeStoreSummary>, String> {
+    fn list_stores(&self) -> Result<Vec<CoffeeStoreSummary>, ServerError> {
         let store_map = self.store_map.read().unwrap();
         Ok(store_map.values().cloned()
             .map(|details| CoffeeStoreSummary {
@@ -29,7 +30,7 @@ impl CoffeeStoreDao for HashMapCoffeeStoreDao {
             .collect())
     }
 
-    fn create_store(&self, coffee_store: CoffeeStoreManifest) -> Result<CoffeeStoreDetails, String>{
+    fn create_store(&self, coffee_store: CoffeeStoreManifest) -> Result<CoffeeStoreDetails, ServerError>{
         let id: String = Uuid::new_v4().to_string();
         let coffee_store_details = CoffeeStoreDetails {
             id: id.clone(),

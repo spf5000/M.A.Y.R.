@@ -2,7 +2,7 @@ use crate::dao::coffee_store::CoffeeStoreDao;
 use actix_web::{post, web, HttpResponse, Responder};
 use rust_server_model::coffee_store::{CreateCoffeeStoreRequest, CreateCoffeeStoreResponse};
 use std::sync::Arc;
-use crate::utils::error_utils::create_internal_error;
+use crate::error::ServerError;
 
 #[post("/coffee/create")]
 pub async fn create_coffee_store(
@@ -14,10 +14,16 @@ pub async fn create_coffee_store(
         Result::Err(err) => {
             // TODO: Invalid input request?
             log::error!("Failed to deserialize request: {:?}", request);
-            return create_internal_error()
+            return ServerError::from(err).into()
         }
     };
-    handler.handle(request)
+    match handler.handle(request) {
+        Ok(response) => response,
+        Err(err) => {
+            log::error!("Error returned by the handler: {}", err);
+            err.into()
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -32,26 +38,35 @@ impl CreateCoffeeStoreHandler {
         CreateCoffeeStoreHandler { coffee_store_dao }
     }
 
-    fn handle(&self, request: CreateCoffeeStoreRequest) -> HttpResponse {
-        match self.coffee_store_dao.create_store(request.coffee_store) {
-            Ok(coffee_store_details) => {
-                let response = CreateCoffeeStoreResponse {
-                    coffee_store_details
-                };
-                match serde_json::to_string(&response) {
-                    Ok(body) => HttpResponse::Ok()
-                        .content_type("application/json")
-                        .body(body),
-                    Err(err) => {
-                        log::error!("Failed to serialize CreateCoffeeStore response: {}", err);
-                        create_internal_error()
-                    }
-                }
-            },
-            Err(err) => {
-                log::error!("DAO error when creating store: {}", err);
-                create_internal_error()
-            }
-        }
+    // fn handle(&self, request: CreateCoffeeStoreRequest) -> HttpResponse {
+    //     match self.coffee_store_dao.create_store(request.coffee_store) {
+    //         Ok(coffee_store_details) => {
+    //             let response = CreateCoffeeStoreResponse {
+    //                 coffee_store_details
+    //             };
+    //             match serde_json::to_string(&response) {
+    //                 Ok(body) => HttpResponse::Ok()
+    //                     .content_type("application/json")
+    //                     .body(body),
+    //                 Err(err) => {
+    //                     log::error!("Failed to serialize CreateCoffeeStore response: {}", err);
+    //                     create_internal_error()
+    //                 }
+    //             }
+    //         },
+    //         Err(err) => {
+    //             log::error!("DAO error when creating store: {}", err);
+    //             create_internal_error()
+    //         }
+    //     }
+    // }
+
+    fn handle(&self, request: CreateCoffeeStoreRequest) -> Result<HttpResponse, ServerError> {
+        let response = CreateCoffeeStoreResponse {
+            coffee_store_details: self.coffee_store_dao.create_store(request.coffee_store)?
+        };
+        Ok(HttpResponse::Ok()
+            .content_type("application/json")
+            .body(serde_json::to_string(&response)?))
     }
 }
