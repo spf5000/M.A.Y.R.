@@ -1,13 +1,13 @@
 use crate::dao::coffee_store::CoffeeStoreDao;
 use actix_web::{post, web, HttpResponse, Responder};
-use rust_server_model::coffee_store::{CreateCoffeeStoreRequest, CreateCoffeeStoreResponse};
+use rust_server_model::coffee_store::{GetCoffeeStoreRequest, GetCoffeeStoreResponse};
 use std::sync::Arc;
 use crate::error::ServerError;
 
-#[post("/coffee/create")]
-pub async fn create_coffee_store(
+#[post("/coffee/get")]
+pub async fn get_coffee_store(
     request: web::Bytes,
-    handler: web::Data<CreateCoffeeStoreHandler>,
+    handler: web::Data<GetCoffeeStoreHandler>,
 ) -> impl Responder {
     let request = match serde_json::from_slice(&request) {
         Result::Ok(request) => request,
@@ -27,20 +27,20 @@ pub async fn create_coffee_store(
 }
 
 #[derive(Clone)]
-pub struct CreateCoffeeStoreHandler {
+pub struct GetCoffeeStoreHandler {
     coffee_store_dao: Arc<dyn CoffeeStoreDao + Send + Sync>,
 }
 
-impl CreateCoffeeStoreHandler {
+impl GetCoffeeStoreHandler {
     pub fn new(
         coffee_store_dao: Arc<dyn CoffeeStoreDao + Send + Sync>,
-    ) -> CreateCoffeeStoreHandler {
-        CreateCoffeeStoreHandler { coffee_store_dao }
+    ) -> GetCoffeeStoreHandler {
+        GetCoffeeStoreHandler { coffee_store_dao }
     }
 
-    fn handle(&self, request: CreateCoffeeStoreRequest) -> Result<HttpResponse, ServerError> {
-        let response = CreateCoffeeStoreResponse {
-            coffee_store_details: self.coffee_store_dao.create_store(request.coffee_store)?
+    fn handle(&self, request: GetCoffeeStoreRequest) -> Result<HttpResponse, ServerError> {
+        let response = GetCoffeeStoreResponse {
+            coffee_store_details: self.coffee_store_dao.get_store_by_id(&request.coffee_store_id)?
         };
         Ok(HttpResponse::Ok()
             .content_type("application/json")

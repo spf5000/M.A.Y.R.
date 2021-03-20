@@ -1,8 +1,8 @@
 use super::CoffeeStoreDao;
 use mongodb::sync::Client;
-use mongodb::bson::{from_document, to_document};
+use mongodb::bson::{from_document, to_document, doc};
 use rust_server_model::coffee_store::{CoffeeStoreDetails, CoffeeStoreSummary, CoffeeStoreManifest};
-use crate::error::ServerError;
+use crate::error::{ServerError, ServerErrorType};
 use mongodb::sync::Collection;
 use uuid::Uuid;
 
@@ -50,5 +50,19 @@ impl CoffeeStoreDao for MongoCoffeeStoreDao {
         let collection = self.get_coffee_store_collection();
         collection.insert_one(to_document(&coffee_store_details)?, None)?;
         Ok(coffee_store_details)
+    }
+
+    fn get_store_by_id(self: &Self, id: &String) -> Result<CoffeeStoreDetails, ServerError> {
+        log::info!("Getting coffee store by id {} from MongoDB", id);
+        let collection = self.get_coffee_store_collection();
+        let filter = doc! { "Id": id };
+        let result = collection.find_one(Some(filter), None)?;
+        match result {
+            Some(document) => Ok(from_document(document)?),
+            None => Err(ServerError {
+                error_type: ServerErrorType::NotFound(format!("No item with id {} found", id)),
+                source: None
+            })
+        }
     }
 }

@@ -40,6 +40,7 @@ impl ListCoffeeStoresHandler {
     }
 
     fn handle(&self, _req: ListCoffeeStoresRequest) -> Result<HttpResponse, ServerError> {
+        // // TODO: paginate DAO
         let dao_response = self.coffee_store_dao.list_stores()?;
         let handler_response = ListCofeeStoresResponse {
             coffee_stores: dao_response,
@@ -49,27 +50,5 @@ impl ListCoffeeStoresHandler {
                .content_type("application/json")
                .body(serde_json::to_string(&handler_response)?),
         )
-        // // TODO: paginate DAO
-        // let response = self.coffee_store_dao.list_stores();
-        // match response {
-        //     Ok(stores) => {
-        //         let response = ListCofeeStoresResponse {
-        //             coffee_stores: stores,
-        //             next_token: Option::None
-        //         };
-        //         match serde_json::to_string(&response) {
-        //             Ok(body) => HttpResponse::Ok()
-        //                 .content_type("application/json")
-        //                 .body(body),
-        //             Err(err) => {
-        //                 log::error!("Failed to serialize CreateCoffeeStore response: {}", err);
-        //                 create_internal_error()
-        //             }
-        //         }
-        //     },
-        //     Err(err) => {
-        //         create_internal_error()
-        //     }
-        // }
     }
 }

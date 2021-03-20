@@ -20,7 +20,7 @@ impl HashMapCoffeeStoreDao {
 
 impl CoffeeStoreDao for HashMapCoffeeStoreDao {
     fn list_stores(&self) -> Result<Vec<CoffeeStoreSummary>, ServerError> {
-        let store_map = self.store_map.read().unwrap();
+        let store_map = self.store_map.read()?;
         Ok(store_map.values().cloned()
             .map(|details| CoffeeStoreSummary {
                 id: details.id,
@@ -40,9 +40,19 @@ impl CoffeeStoreDao for HashMapCoffeeStoreDao {
         };
 
         log::debug!("Inserting {:?} with id {}", &coffee_store_details, &id);
-        let mut store_map = self.store_map.write().unwrap();
+        let mut store_map = self.store_map.write()?;
         store_map.insert(id, coffee_store_details.clone());
 
         Ok(coffee_store_details)
+    }
+
+    fn get_store_by_id(self: &Self, id: &String) -> Result<CoffeeStoreDetails, ServerError> {
+        let store_map = self.store_map.read()?;
+        // let store_map = self.store_map.read().map_err(|source| ServerError {
+        //     error_type: ServerErrorType::UNKNOWN(format!("Failed to get the key for the hash map: {}", source.to_string())),
+        //     source: Some(Box::new(source))
+        // })?;
+
+        store_map.get(id).map(|unowned| unowned.clone()).ok_or(ServerError::not_found(format!("No Coffee Store with ID {} found!", id)))
     }
 }
