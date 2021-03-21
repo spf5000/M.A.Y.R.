@@ -2,6 +2,7 @@
 mod app_router;
 mod agents;
 mod components;
+mod error;
 
 extern crate console_error_panic_hook;
 use std::panic;
@@ -12,7 +13,7 @@ use yew::{App, Component, ComponentLink, ShouldRender, Html, html};
 
 use app_router::AppRouter;
 
-struct Model {}
+pub struct Model {}
 
 impl Component for Model {
     type Message = ();
@@ -47,8 +48,3 @@ pub fn run_app() {
     // Start the app.
     App::<Model>::new().mount_to_body();
 }
-
-// #[wasm_bindgen]
-// pub fn start_worker() {
-//     agents::coffee_summary_store::CoffeeSummaryStore::register();
-// }

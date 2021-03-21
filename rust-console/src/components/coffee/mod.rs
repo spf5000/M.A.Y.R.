@@ -1,1 +1,1 @@
-pub mod coffee_summary;
+pub mod coffee_details;

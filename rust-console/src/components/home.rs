@@ -33,9 +33,7 @@ impl Component for Home {
                     <h1> { "The Coffee Collective!" }</h1>
                 </header>
                 <ol>
-                    <li><Link route=AppRoute::CoffeeSummary("rosolinis".to_string())>{"Rosolini's"}</Link></li>
-                    <li><Link route=AppRoute::CoffeeSummary("starbucks".to_string())>{"StarBucks"}</Link></li>
-                    <li><Link route=AppRoute::CoffeeSummary("joes_coffee".to_string())>{"Joe's Coffee"}</Link></li>
+                    <li><Link route=AppRoute::CoffeeStoreDetails("6d3e8332-717d-455f-a59a-81627ee46d06".to_string())>{"Rosolini's"}</Link></li>
                 </ol>
             </>
         }

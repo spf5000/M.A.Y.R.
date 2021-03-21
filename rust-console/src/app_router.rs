@@ -3,15 +3,19 @@ use yew_router::{Switch};
 use yew_router::router::{Router};
 use yew_router::components::{RouterAnchor};
 
-use crate::components::coffee::coffee_summary::CoffeeSummaryComponent;
+use crate::components::coffee::coffee_details::CoffeeStoreDetailsComponent;
 use crate::components::home::Home;
 
 pub struct AppRouter {}
 
 #[derive(Switch, Debug, Clone)]
 pub enum AppRoute {
-    #[to = "/coffee/{id}"]
-    CoffeeSummary(String),
+    #[to = "/coffee/details/{id}"]
+    CoffeeStoreDetails(String),
+    // #[to = "/coffee/summary/{page}"]
+    // CoffeeStoreSummaries(u32),
+    // #[to = "/coffee/create"]
+    // CreateCoffeeStore,
     #[to = "/"]
     Home,
 }
@@ -36,8 +40,8 @@ impl Component for AppRouter {
     fn view(&self) -> Html {
         let render_func = Router::render(|route: AppRoute| match route {
             AppRoute::Home=> html! { <Home/> },
-            AppRoute::CoffeeSummary(coffee_id) => {
-                html! { <CoffeeSummaryComponent id=coffee_id /> }
+            AppRoute::CoffeeStoreDetails(coffee_id) => {
+                html! { <CoffeeStoreDetailsComponent id=coffee_id /> }
             },
             _ => html! { <Home/> },
         });

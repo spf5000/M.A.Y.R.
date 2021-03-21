@@ -1,1 +1,1 @@
-pub mod coffee_summary_store;
+pub mod coffee_store_agent;

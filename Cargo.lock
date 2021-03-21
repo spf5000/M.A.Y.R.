@@ -2004,6 +2004,7 @@ dependencies = [
  "log",
  "rust-server-model",
  "serde",
+ "serde_json",
  "wasm-bindgen",
  "wasm-logger",
  "yew",

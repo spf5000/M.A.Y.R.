@@ -9,7 +9,7 @@ use super::common::CoffeeStoreSummary;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct ListCoffeeStoresRequest{
-    pub max_items: Option<String>,
+    pub max_items: Option<u8>,
     pub next_token: Option<String>,
 }
 
@@ -20,7 +20,7 @@ pub struct ListCoffeeStoresRequest{
 /// Token to start the List Coffee Stores request from for future calls.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "PascalCase")]
-pub struct ListCofeeStoresResponse{
+pub struct ListCoffeeStoresResponse{
     pub coffee_stores: Vec<CoffeeStoreSummary>,
     pub next_token: Option<String>
 }

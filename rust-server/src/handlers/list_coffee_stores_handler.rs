@@ -2,7 +2,7 @@ use crate::dao::coffee_store::CoffeeStoreDao;
 use actix_web::{post, web, HttpResponse, Responder};
 use std::sync::Arc;
 use crate::error::ServerError;
-use rust_server_model::coffee_store::{ListCoffeeStoresRequest, ListCofeeStoresResponse};
+use rust_server_model::coffee_store::{ListCoffeeStoresRequest, ListCoffeeStoresResponse};
 
 #[post("/coffee/list")]
 pub async fn list_coffee_stores(
@@ -42,7 +42,7 @@ impl ListCoffeeStoresHandler {
     fn handle(&self, _req: ListCoffeeStoresRequest) -> Result<HttpResponse, ServerError> {
         // // TODO: paginate DAO
         let dao_response = self.coffee_store_dao.list_stores()?;
-        let handler_response = ListCofeeStoresResponse {
+        let handler_response = ListCoffeeStoresResponse {
             coffee_stores: dao_response,
             next_token: None
         };
