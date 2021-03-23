@@ -2,30 +2,33 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashSet, HashMap};
 use yew::worker::{AgentLink, HandlerId, Agent};
 use yew::services::fetch::{FetchService, FetchTask, Response as FetchResponse, Request as FetchRequest};
-use yew::format::{Nothing, Text};
+use yew::format::{Text};
 use yew::agent::Context;
 use yew::Callback;
-use rust_server_model::coffee_store::{CoffeeStoreManifest, CoffeeStoreDetails, CoffeeStoreSummary, GetCoffeeStoreRequest, CreateCoffeeStoreRequest, ListCoffeeStoresRequest, ListCoffeeStoresResponse, CreateCoffeeStoreResponse, GetCoffeeStoreResponse};
+use rust_server_model::coffee_store::{CoffeeStoreManifest, CoffeeStoreDetails, GetCoffeeStoreRequest, CreateCoffeeStoreRequest, ListCoffeeStoresRequest, ListCoffeeStoresResponse, CreateCoffeeStoreResponse, GetCoffeeStoreResponse};
 use crate::error::SimpleError;
 
 const SERVER_URL_BASE: &'static str = "http://localhost:9080/coffee/";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum AgentMsg{
-    ResponseCallback(HandlerId, AgentResponse)
+    ResponseCallback(HandlerId, CoffeeStoreAgentResponse)
 }
 
+/* These "should" have their own "internal"/client side structures to decouple the agent APIs from
+ * the backend. However, they're currently exactly the same with no clear UI specific abstractions.
+ */
 #[derive(Serialize, Deserialize, Debug)]
-pub enum AgentRequest {
+pub enum CoffeeStoreAgentRequest {
     GetCoffeeStore(String),
-    ListCoffeeStores(Option<String>, Option<u8>),
+    ListCoffeeStores(ListCoffeeStoresRequest),
     CreateCoffeeStore(CoffeeStoreManifest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub enum AgentResponse {
+pub enum CoffeeStoreAgentResponse {
     GetCoffeeStoreResponse(CoffeeStoreDetails),
-    ListCoffeeStoresResponse(Vec<CoffeeStoreSummary>),
+    ListCoffeeStoresResponse(ListCoffeeStoresResponse),
     CreateCoffeeStoreResponse(CoffeeStoreDetails),
     ServerError,
     AgentError
@@ -47,8 +50,8 @@ impl CoffeeStoreAgent {
         let http_callback: Callback<FetchResponse<Text>> = self.link.callback(
             move |response: FetchResponse<Text>| {
                 match parse_response::<GetCoffeeStoreResponse>(&response) {
-                    Ok(server_response) => AgentMsg::ResponseCallback(who, AgentResponse::GetCoffeeStoreResponse(server_response.coffee_store_details)),
-                    Err(_) => AgentMsg::ResponseCallback(who, AgentResponse::ServerError)
+                    Ok(server_response) => AgentMsg::ResponseCallback(who, CoffeeStoreAgentResponse::GetCoffeeStoreResponse(server_response.coffee_store_details)),
+                    Err(_) => AgentMsg::ResponseCallback(who, CoffeeStoreAgentResponse::ServerError)
                 }
             },
         );
@@ -65,8 +68,8 @@ impl CoffeeStoreAgent {
         let http_callback: Callback<FetchResponse<Text>> = self.link.callback(
             move |response: FetchResponse<Text>| {
                 match parse_response::<CreateCoffeeStoreResponse>(&response) {
-                    Ok(server_response) => AgentMsg::ResponseCallback(who, AgentResponse::CreateCoffeeStoreResponse(server_response.coffee_store_details)),
-                    Err(_) => AgentMsg::ResponseCallback(who, AgentResponse::ServerError)
+                    Ok(server_response) => AgentMsg::ResponseCallback(who, CoffeeStoreAgentResponse::CreateCoffeeStoreResponse(server_response.coffee_store_details)),
+                    Err(_) => AgentMsg::ResponseCallback(who, CoffeeStoreAgentResponse::ServerError)
                 }
             },
         );
@@ -84,8 +87,8 @@ impl CoffeeStoreAgent {
         let http_callback: Callback<FetchResponse<Text>> = self.link.callback(
             move |response: FetchResponse<Text>| {
                 match parse_response::<ListCoffeeStoresResponse>(&response) {
-                    Ok(server_response) => AgentMsg::ResponseCallback(who, AgentResponse::ListCoffeeStoresResponse(server_response.coffee_stores)),
-                    Err(_) => AgentMsg::ResponseCallback(who, AgentResponse::ServerError)
+                    Ok(server_response) => AgentMsg::ResponseCallback(who, CoffeeStoreAgentResponse::ListCoffeeStoresResponse(server_response)),
+                    Err(_) => AgentMsg::ResponseCallback(who, CoffeeStoreAgentResponse::ServerError)
                 }
             },
         );
@@ -117,8 +120,8 @@ fn parse_response<'a, T>(response: &'a FetchResponse<Text>) -> Result<T, anyhow:
 impl Agent for CoffeeStoreAgent {
     type Reach = Context<Self>;
     type Message = AgentMsg;
-    type Input = AgentRequest;
-    type Output = AgentResponse;
+    type Input = CoffeeStoreAgentRequest;
+    type Output = CoffeeStoreAgentResponse;
 
     fn create(link: AgentLink<Self>) -> Self {
         Self {
@@ -143,14 +146,14 @@ impl Agent for CoffeeStoreAgent {
 
     fn handle_input(&mut self, msg: Self::Input, who: HandlerId) {
         let result = match msg {
-            AgentRequest::GetCoffeeStore(coffee_store_id) => self.get_coffee_store(who, coffee_store_id),
-            AgentRequest::ListCoffeeStores(next_token, max_items) => self.list_coffee_stores(who, next_token, max_items),
-            AgentRequest::CreateCoffeeStore(manifest) => self.create_coffee_store(who, manifest),
+            CoffeeStoreAgentRequest::GetCoffeeStore(coffee_store_id) => self.get_coffee_store(who, coffee_store_id),
+            CoffeeStoreAgentRequest::ListCoffeeStores(request) => self.list_coffee_stores(who, request.next_token, request.max_items),
+            CoffeeStoreAgentRequest::CreateCoffeeStore(manifest) => self.create_coffee_store(who, manifest),
         };
 
         if result.is_err() {
             log::error!("Failed to send request: {}", result.err().unwrap());
-            self.link.respond(who, AgentResponse::AgentError)
+            self.link.respond(who, CoffeeStoreAgentResponse::AgentError)
         }
     }
 

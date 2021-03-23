@@ -1,6 +1,7 @@
 use yew::{Component, ComponentLink, ShouldRender, Html, html};
 
 use crate::app_router::{AppRoute, Link};
+use crate::components::coffee::coffee_summaries::CoffeeSummariesComponent;
 
 pub struct Home {
     // link: ComponentLink<Self>,
@@ -32,9 +33,7 @@ impl Component for Home {
                 <header>
                     <h1> { "The Coffee Collective!" }</h1>
                 </header>
-                <ol>
-                    <li><Link route=AppRoute::CoffeeStoreDetails("6d3e8332-717d-455f-a59a-81627ee46d06".to_string())>{"Rosolini's"}</Link></li>
-                </ol>
+                <CoffeeSummariesComponent page=0 />
             </>
         }
     }

@@ -1,6 +1,6 @@
 use yew::{Properties, ComponentLink, Component, ShouldRender, Html, html, Bridge, Callback, Bridged};
 use crate::app_router::{AppRoute, Link};
-use crate::agents::coffee_store_agent::{CoffeeStoreAgent, AgentRequest, AgentResponse};
+use crate::agents::coffee_store_agent::{CoffeeStoreAgent, CoffeeStoreAgentRequest, CoffeeStoreAgentResponse};
 use rust_server_model::coffee_store::CoffeeStoreDetails;
 
 #[derive(Properties, Clone, PartialEq)]
@@ -23,16 +23,16 @@ impl Component for CoffeeStoreDetailsComponent {
     type Message = Msg;
     type Properties = Props;
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let callback: Callback<AgentResponse> = link.callback(|response: AgentResponse| {
+        let callback: Callback<CoffeeStoreAgentResponse> = link.callback(|response: CoffeeStoreAgentResponse| {
             match response {
-                AgentResponse::GetCoffeeStoreResponse(details) => Msg::DataReceived(details),
-                AgentResponse::ServerError => Msg::Error("Server Error"),
-                AgentResponse::AgentError => Msg::Error("Agent Error"),
+                CoffeeStoreAgentResponse::GetCoffeeStoreResponse(details) => Msg::DataReceived(details),
+                CoffeeStoreAgentResponse::ServerError => Msg::Error("Server Error"),
+                CoffeeStoreAgentResponse::AgentError => Msg::Error("Agent Error"),
                 _ => Msg::Error("Unexpected Response received!")
             }
         });
         let mut agent = CoffeeStoreAgent::bridge(callback);
-        agent.send(AgentRequest::GetCoffeeStore(props.id));
+        agent.send(CoffeeStoreAgentRequest::GetCoffeeStore(props.id));
         Self {
             coffee_summary_agent: agent,
             coffee_store_details: None,
@@ -67,10 +67,9 @@ impl Component for CoffeeStoreDetailsComponent {
             let rating = details.avg_rating.map(|float| float.to_string()).unwrap_or("Unknown".to_string());
             return html! {
                     <div class="components.coffee-store-details">
-                        <div>{ format!("Name123: {}", details.name) } </div>
+                        <div>{ format!("Name: {}", details.name) } </div>
                         <div>{ format!("Description: {}", description) } </div>
                         <div>{ format!("Average Rating: {}", rating )} </div>
-                        <div>{ "Some cool string" }</div>
                         <div><Link route=AppRoute::Home>{"Return Home!"}</Link></div>
                     </div>
                 }
