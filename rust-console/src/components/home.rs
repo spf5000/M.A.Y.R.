@@ -33,7 +33,9 @@ impl Component for Home {
                 <header>
                     <h1> { "The Coffee Collective!" }</h1>
                 </header>
+                <h2> { "Coffee Stores"} </h2>
                 <CoffeeSummariesComponent page=0 />
+                <Link route=AppRoute::CreateCoffeeStore>{"Create Store!"}</Link>
             </>
         }
     }

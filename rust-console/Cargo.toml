@@ -32,3 +32,8 @@ serde_json = "1.0.64"
 
 # Server model
 rust-server-model = {path = "../rust-server-model"}
+
+
+[dependencies.web-sys]
+version = "0.3.49"
+features = ["HtmlFormElement", "HtmlCollection", "Element"]

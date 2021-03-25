@@ -4,6 +4,7 @@ use yew_router::router::{Router};
 use yew_router::components::{RouterAnchor};
 
 use crate::components::coffee::coffee_details::CoffeeStoreDetailsComponent;
+use crate::components::coffee::coffee_store_form::CoffeeStoreForm;
 use crate::components::home::Home;
 
 pub struct AppRouter {}
@@ -14,8 +15,8 @@ pub enum AppRoute {
     CoffeeStoreDetails(String),
     // #[to = "/coffee/summary/{page}"]
     // CoffeeStoreSummaries(u32),
-    // #[to = "/coffee/create"]
-    // CreateCoffeeStore,
+    #[to = "/coffee/create"]
+    CreateCoffeeStore,
     #[to = "/"]
     Home,
 }
@@ -42,6 +43,9 @@ impl Component for AppRouter {
             AppRoute::Home=> html! { <Home/> },
             AppRoute::CoffeeStoreDetails(coffee_id) => {
                 html! { <CoffeeStoreDetailsComponent id=coffee_id /> }
+            },
+            AppRoute::CreateCoffeeStore => {
+                html! { <CoffeeStoreForm/> }
             },
             _ => html! { <Home/> },
         });
