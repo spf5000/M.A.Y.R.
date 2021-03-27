@@ -1,10 +1,24 @@
 # Running the applications
-## Server
+## Via Docker
+1.  Build The Server:
+```
+docker build -t rust-server -f ./Dockerfile-server .
+```
+1. Build the Client:
+```
+docker build -t rust-console -f ./Dockerfile-console .
+```
+1. docker-compose up
+
+## Locally
+### Server
 ```
 cargo run -p rust-server
 ```
 
-## Console
+**NOTE: You'll need mongo DB running locally as well.**
+
+### Console
 ```
 cargo build -p rust-console
 wasm-pack build --target web --out-name wasm --out-dir static ./rust-console

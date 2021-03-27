@@ -1,0 +1,40 @@
+# Builder container
+FROM rust:latest as builder
+
+# create workspace and build dependencies
+RUN cargo new --bin rust-server
+WORKDIR ./rust-server
+COPY ./rust-server/Cargo.toml ./Cargo.toml
+COPY ./rust-server-model ../rust-server-model
+RUN cargo build --release
+
+# Now move our code over and build it.
+RUN rm src/*.rs
+ADD ./rust-server ./
+RUN cargo build --release
+
+# Actual Application container
+FROM debian:buster-slim
+ARG APP=/usr/src/app
+
+RUN apt-get update && apt-get install -y python
+
+EXPOSE 9080
+
+ENV TZ=Etc/UTC \
+    APP_USER=rust-server
+
+RUN groupadd $APP_USER \
+    && useradd -g $APP_USER $APP_USER \
+    && mkdir -p ${APP}
+
+COPY --from=builder /rust-server/target/release/rust-server ${APP}/rust-server
+
+RUN chown -R $APP_USER:$APP_USER ${APP}
+
+USER $APP_USER
+WORKDIR ${APP}
+
+COPY ./rust-server/log4rs.yml ./log4rs.yml
+
+CMD ["./rust-server"]

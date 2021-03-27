@@ -117,19 +117,19 @@ impl Component for CoffeeStoreForm {
     }
 
     fn view(&self) -> Html {
-        // Only show the page if we've loaded enough items from the server.
-        if self.coffee_store_details.is_some() {
+       // If there is an error, we show it
+        if self.error.is_some() {
+            let error = self.error.as_ref().unwrap();
+            render_error(error)
+        }
+        // If we've gotten a response from the server, show it.
+        else if self.coffee_store_details.is_some() {
             let coffee_store_details = self.coffee_store_details.as_ref().unwrap();
             render_success(&coffee_store_details.id)
         }
         // Manifest is submitted, but we don't have details yet. Still waiting on the agent response.
         else if self.submitted_manifest.is_some() {
             render_submitted(self.submitted_manifest.as_ref().unwrap())
-        }
-        // If there is an error, we show it
-        else if self.error.is_some() {
-            let error = self.error.as_ref().unwrap();
-            render_error(error)
         }
         // otherwise, show the user the form to fill out.
         else {

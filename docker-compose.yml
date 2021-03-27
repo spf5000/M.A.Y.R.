@@ -5,6 +5,37 @@ services:
     container_name: 'mayr-mongo'
     volumes:
       - ./mongo-volume:/data/db/
+    # Only the console "NEEDS" to be exposed, so we don't expose the database here.
+    # ports:
+    #  - '27017-27019:27017-27019'
+  server:
+    # image: 'rust-server'
+    build:
+      context: .
+      dockerfile: Dockerfile-server
+    container_name: 'rust-server'
+    depends_on:
+      - database 
+    environment:
+      - DATABASE_HOSTNAME=database # docker automagically renames the hostname to the container name
+      - DATABASE_PORT=27017
+    # Only the console "NEEDS" to be exposed, so we don't expose the server here.
+    # ports:
+    #  - '9080:9080'
+    
+  console:
+    # image: 'rust-console'
+    build:
+      context: .
+      dockerfile: Dockerfile-console
+    container_name: 'rust-console'
+    depends_on:
+      - server
+    environment:
+      - SERVER_URL=server:9080 # docker automagically renames the hostname to the container name
+    links:
+      - "server:localhost"
     ports:
-      - '27017-27019:27017-27019'
+      - '8080:80' # Console needs to be exposed. Everything else is handled by docker-compose.
+
 

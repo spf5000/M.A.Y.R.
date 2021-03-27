@@ -1,0 +1,28 @@
+# Builder container
+FROM rust:latest as builder
+
+# install wasm-pack
+RUN USER=root cargo install wasm-pack
+
+# create workspace and build dependencies
+RUN cargo new --lib rust-console
+WORKDIR ./rust-console
+COPY ./rust-console/Cargo.toml ./Cargo.toml
+COPY ./rust-server-model ../rust-server-model
+RUN cargo build --release
+
+# Now move our code over and build it.
+RUN rm src/*.rs
+ADD ./rust-console ./
+RUN cargo build --release
+
+# Now wasm-pack
+RUN wasm-pack build --target web --out-name wasm --out-dir static
+
+# Actual Application container
+# FROM nginx:perl-stable
+# COPY --from=builder /rust-console/static/ /usr/share/nginx/html/
+FROM python:latest
+COPY --from=builder /rust-console/static/ /rust-console/
+EXPOSE 8080
+CMD python -m http.server --directory /rust-console 80

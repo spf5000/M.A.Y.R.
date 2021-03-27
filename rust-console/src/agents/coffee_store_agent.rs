@@ -7,8 +7,11 @@ use yew::agent::Context;
 use yew::Callback;
 use rust_server_model::coffee_store::{CoffeeStoreManifest, CoffeeStoreDetails, GetCoffeeStoreRequest, CreateCoffeeStoreRequest, ListCoffeeStoresRequest, ListCoffeeStoresResponse, CreateCoffeeStoreResponse, GetCoffeeStoreResponse};
 use crate::error::SimpleError;
+use std::env;
 
-const SERVER_URL_BASE: &'static str = "http://localhost:9080/coffee/";
+// This is the port the server should run on on the local machine.
+const SERVER_URL_ENV_VAR: &str = "SERVER_URL";
+const SERVER_URL_FALLBACK: &str = "http://localhost:9080";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum AgentMsg{
@@ -37,14 +40,14 @@ pub enum CoffeeStoreAgentResponse {
 pub struct CoffeeStoreAgent {
     link: AgentLink<CoffeeStoreAgent>,
     subscribers: HashSet<HandlerId>,
-    // TODO: This should be multithreaded.
     fetch_tasks: HashMap<HandlerId, FetchTask>,
+    server_url: String,
 }
 
 impl CoffeeStoreAgent {
     fn get_coffee_store(&mut self, who: HandlerId, coffee_store_id: String) -> anyhow::Result<()> {
         log::info!("Getting Coffee Store by id: {}", coffee_store_id);
-        let http_request = create_request("get", &GetCoffeeStoreRequest {
+        let http_request = self.create_request("get", &GetCoffeeStoreRequest {
             coffee_store_id
         })?;
         let http_callback: Callback<FetchResponse<Text>> = self.link.callback(
@@ -62,7 +65,7 @@ impl CoffeeStoreAgent {
 
     fn create_coffee_store(&mut self, who: HandlerId, manifest: CoffeeStoreManifest) -> anyhow::Result<()> {
         log::info!("Creating Coffee Store: {:?}", manifest);
-        let http_request = create_request("create", &CreateCoffeeStoreRequest {
+        let http_request = self.create_request("create", &CreateCoffeeStoreRequest {
             coffee_store: manifest
         })?;
         let http_callback: Callback<FetchResponse<Text>> = self.link.callback(
@@ -80,7 +83,7 @@ impl CoffeeStoreAgent {
 
     fn list_coffee_stores(&mut self, who: HandlerId, next_token: Option<String>, page_size: Option<u8>) -> anyhow::Result<()> {
         log::info!("Listing Coffee Stores");
-        let http_request = create_request("list", &ListCoffeeStoresRequest {
+        let http_request = self.create_request("list", &ListCoffeeStoresRequest {
             max_items: page_size,
             next_token
         })?;
@@ -96,14 +99,15 @@ impl CoffeeStoreAgent {
         self.fetch_tasks.insert(who, fetch_task);
         Ok(())
     }
+
+    fn create_request<T>(&self, path: &'static str, request: &T) -> anyhow::Result<FetchRequest<Text>> where T: Serialize {
+        let text: Text = Ok(serde_json::to_string(request)?);
+        Ok(FetchRequest::post(format!("{}/coffee/{}", self.server_url, path))
+            .body(text)
+            .unwrap())
+    }
 }
 
-fn create_request<T>(path: &'static str, request: &T) -> anyhow::Result<FetchRequest<Text>> where T: Serialize {
-    let text: Text = Ok(serde_json::to_string(request)?);
-    Ok(FetchRequest::post(format!("{}{}", SERVER_URL_BASE, path))
-        .body(text)
-        .unwrap())
-}
 
 fn parse_response<'a, T>(response: &'a FetchResponse<Text>) -> Result<T, anyhow::Error> where T: Deserialize<'a> {
     if response.status().is_success() {
@@ -124,10 +128,16 @@ impl Agent for CoffeeStoreAgent {
     type Output = CoffeeStoreAgentResponse;
 
     fn create(link: AgentLink<Self>) -> Self {
+        let server_url = env::var(SERVER_URL_ENV_VAR).unwrap_or_else(|err| {
+            log::error!("Error getting the server endpoint: {}\n using fallback!", err);
+            String::from(SERVER_URL_FALLBACK)
+        });
+        log::info!("Creating CoffeeStoreAgent talking to server at {}", server_url);
         Self {
             link,
             subscribers: HashSet::new(),
-            fetch_tasks: HashMap::new()
+            fetch_tasks: HashMap::new(),
+            server_url
         }
     }
 
