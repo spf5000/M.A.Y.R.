@@ -64,7 +64,7 @@ impl Component for CoffeeStoreForm {
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let callback: Callback<CoffeeStoreAgentResponse> = link.callback(|response: CoffeeStoreAgentResponse| {
             match response {
-                CoffeeStoreAgentResponse::GetCoffeeStoreResponse(details) => Msg::DataReceived(details),
+                CoffeeStoreAgentResponse::CreateCoffeeStoreResponse(details) => Msg::DataReceived(details),
                 CoffeeStoreAgentResponse::ServerError => Msg::Error("Server Error"),
                 CoffeeStoreAgentResponse::AgentError => Msg::Error("Agent Error"),
                 _ => Msg::Error("Unexpected Response received!")
@@ -186,21 +186,10 @@ fn render_form_field(link: &ComponentLink<CoffeeStoreForm>, tuple: &'static (&'s
     let callback: Callback<ChangeData> = link.callback(move |change: ChangeData| {
         Msg::TextEditted(id, change)
     });
-    // let required_string = if required { "required" } else { "" };
-    // let input_field_attributes = format!("type=\"text\" id={} name={} {} ", id, id, required_string);
-    // if required {
-    //     return html! {
-    //     <>
-    //         <label for={id}>{field}</label><br/>
-    //         <input type="text" id={id} name={id} onchange=callback required /><br/>
-    //     </>
-    //     }
-    // } else {
-        return html! {
+    return html! {
         <>
             <label for={id}>{field}</label><br/>
-            <input type="text" id={id} name={id} onchange=callback /><br/>
+            <input type="text" id={id} name={id} onchange=callback required={required} /> <br/>
         </>
-        }
-    // }
+    }
 }
