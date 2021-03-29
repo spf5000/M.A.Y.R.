@@ -51,7 +51,7 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::create_coffee_store)
             .service(handlers::get_coffee_store)
     })
-    .bind("127.0.0.1:9080")?
+    .bind("0.0.0.0:9080")?
     .run()
     .await
 }
