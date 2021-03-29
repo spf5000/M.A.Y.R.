@@ -1,10 +1,10 @@
 # What is this?
 This is VERY SIMPLE web stack using leveraging
 
-M: Mongo DB as the database.
-A: Actix Web as the web server.
-Y: Yew as the front end framework.
-R: Rust, powering actix and yew.
+* M: Mongo DB as the database.
+* A: Actix Web as the web server.
+* Y: Yew as the front end framework.
+* R: Rust, powering actix and yew.
 
 This is largely inspired by M.E.A.N. websiting using NodeJS for the majority of development. Why be M.E.A.N. when you can be a M.A.Y.R. :)
 
