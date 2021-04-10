@@ -4,6 +4,7 @@ services:
     image: 'mongo'
     container_name: 'mayr-mongo'
     volumes:
+      - ./mongo-setup:/docker-entrypoint-initdb.d/:ro
       - ./mongo-volume:/data/db/
     # Only the console "NEEDS" to be exposed, so we don't expose the database here.
     # ports:
@@ -20,8 +21,8 @@ services:
       - DATABASE_HOSTNAME=database # docker automagically renames the hostname to the container name
       - DATABASE_PORT=27017
     # Only the console "NEEDS" to be exposed, so we don't expose the server here.
-    # ports:
-    #  - '9080:9080'
+    ports:
+     - '9080:9080'
     
   console:
     # image: 'rust-console'
