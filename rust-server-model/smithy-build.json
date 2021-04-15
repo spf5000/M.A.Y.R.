@@ -1,0 +1,11 @@
+{
+	"version": "1.0",
+	"outputDirectory": "build/output",
+	"imports": ["model"],
+	"plugins": {
+		"openapi": {
+			"service": "com.mayr#MayrService",
+			"protocol": "aws.protocols#restJson1"
+		}
+	}
+}
