@@ -1,5 +1,5 @@
 [package]
-name = "MAYR"
+name = "smithy-parser"
 version = "0.1.0"
 authors = ["Sean Flinn <sflinn54@gmail.com>"]
 edition = "2018"
@@ -7,11 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+abnf = "0.11.3"
+anyhow = "1.0.40"
 
-[workspace]
-members = [
-  "rust-server",
-  "rust-console",
-  "rust-server-model",
-  "smithy-parser"
-]
+[dev-dependencies]
+rstest = "0.9.0"
