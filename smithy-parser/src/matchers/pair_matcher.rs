@@ -1,14 +1,14 @@
-use crate::ParseResult;
+use crate::{Parser};
 
-pub fn pair_matcher<Parser1, Parser2, Result1, Result2>(first_parser: Parser1, second_parser: Parser2)
-    -> impl Fn(&str) -> ParseResult<(Result1, Result2)>
+pub fn pair_matcher<'a, Parser1, Parser2, Output1, Output2>(first_parser: Parser1, second_parser: Parser2)
+    -> impl Parser<'a, (Output1, Output2)>
 where
-  Parser1: Fn(&str) -> Result<(&str, Result1), &str>,
-  Parser2: Fn(&str) -> Result<(&str, Result2), &str>
+  Parser1: Parser<'a, Output1>,
+  Parser2: Parser<'a, Output2>,
 {
     move |input| {
-        let (remaining_input, first_result) = first_parser(input)?;
-        let (remaining_input, second_result) = second_parser(remaining_input).or_else(|_| Err(input))?;
+        let (remaining_input, first_result) = first_parser.parse(input)?;
+        let (remaining_input, second_result) = second_parser.parse(remaining_input).or_else(|_| Err(input))?;
         return Ok((remaining_input, (first_result, second_result)));
     }
 }
@@ -32,32 +32,6 @@ mod tests {
         let beautiful_day_matcher = match_literal(" It's a beautiful day!");
         let pair_matcher = pair_matcher(hello_world_matcher, beautiful_day_matcher);
 
-        assert_eq!(expected, pair_matcher(input));
+        assert_eq!(expected, pair_matcher.parse(input));
     }
-
-    // macro_rules! pair_matcher_tests {
-    //     ($($name:ident: $value:expr,)*) => {
-    //     $(
-    //     #[test]
-    //     fn $name() {
-    //         let (input, expected) = $value;
-    //
-    //         let hello_world_matcher = match_literal("Hello World!");
-    //         let beautiful_day_matcher = match_literal(" It's a beautiful day!");
-    //         let pair_matcher = pair_matcher(hello_world_matcher, beautiful_day_matcher);
-    //
-    //         assert_eq!(expected, pair_matcher(input));
-    //     }
-    //     )*
-    //     }
-    // }
-
-    // pair_matcher_tests! {
-    //     matches_pair_no_extra_input_test: (),
-    //     matches_pair_with_extra_input_test: (),
-    //     matches_pair_out_of_order_test: (),
-    //     first_matches_second_does_not_test: (),
-    //     only_first_matches_no_remaining_input_test: (),
-    //     only_second_matches_no_remaining_input_test: (),
-    // }
 }

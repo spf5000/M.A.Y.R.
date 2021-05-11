@@ -1,11 +1,11 @@
-use crate::ParseResult;
+use crate::{Parser};
 
-pub fn map<Parser, Mapper, Original, New>(parser: Parser, mapper: Mapper) -> ParseResult<New>
+pub fn map<'a, P, M, A, B>(parser: P, mapper: M) -> impl Parser<'a, B>
 where
-    Parser: Fn(&str) -> ParseResult<Original>,
-    Mapper: Fn(Original) -> New,
+    P: Parser<'a, A>,
+    M: Fn(A) -> B,
 {
     move |input| {
-        parser(input).map(|(remaining, original)| (remaining, mapper(original)))
+        parser.parse(input).map(|(remaining, original)| (remaining, mapper(original)))
     }
 }

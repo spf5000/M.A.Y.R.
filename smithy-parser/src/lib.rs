@@ -1,10 +1,20 @@
-use abnf::rulelist;
-use std::fs;
+// use abnf::rulelist;
+// use std::fs;
 
 mod matchers;
 mod functors;
 
-type ParseResult<'a, Output> = Result<(&'a str, Output), &'a str>;
+pub type ParseResult<'a, Output> = Result<(&'a str, Output), &'a str>;
+
+pub trait Parser<'a, Output> {
+    fn parse(&self, input: &'a str) -> ParseResult<'a, Output>;
+}
+
+impl <'a, F, Output> Parser<'a, Output> for F where F: Fn(&'a str) -> ParseResult<'a, Output> {
+    fn parse(&self, input: &'a str) -> ParseResult<'a, Output> {
+        self(input)
+    }
+}
 
 // const SMITHY_IDL_PATH: &str = "configuration/smithy-idl.txt";
 //
